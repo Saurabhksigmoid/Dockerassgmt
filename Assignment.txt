@@ -1,0 +1,30 @@
+- To get logs from Nginx container using filebeat container by accessing port 8080
+- Send it to elastic search container and run it on port 9200
+- Run Kibana at port 5601
+- Create docker-compose file with two services elasticsearch and kibana running on ports 9200 and 5601 on ip 192.168.29.175.
+- 'sysctl -w vm.max_map_count=262144' run this command to avoid error in elasticsearch.
+- 'docker-compose up -d' command to run elasticsearch and kibana containers.
+- 'docker-compose logs -f' to check logs running
+- 'docker-compose ps' to check running of containers
+- check for the ports running on 9200 and 5601
+- 'docker run -d -p 8080:80 --name nginx1 nginx' to run nginx image as container on host.
+- 'docker logs -f nginx' to check for logs.
+- check for ports running on 8080:80
+- Now run filebeat to pull logs from nginx follow below commands
+- 1. run 'docker pull docker.elastic.co/beats/filebeat:8.3.3' command
+- 2. docker run \
+	docker.elastic.co/beats/filebeat:8.3.3 \
+	setup -E setup.kibana.host=192.168.29.175:5601 \
+	-E output.elasticsearch.hosts=["192.168.29.175:9200"]
+-3. ensure your host IP is correctly put
+-4. 'curl -L -O https://raw.githubusercontent.com/elastic/beats/8.3/deploy/docker/filebeat.docker.yml' run this command
+-5. this is filebeat config file configure elasticsearch IP to your host IP in the file.
+-6. Next up run below command to get filebeat running
+	'docker run -d \
+  --name=filebeat \
+  --user=root \
+  --volume="$(pwd)/filebeat.docker.yml:/usr/share/filebeat/filebeat.yml:ro" \
+  --volume="/var/lib/docker/containers:/var/lib/docker/containers:ro" \
+  --volume="/var/run/docker.sock:/var/run/docker.sock:ro" \
+  docker.elastic.co/beats/filebeat:8.3.3 filebeat -e --strict.perms=false'
+- Everything is done now check for logs on respective addresses.
